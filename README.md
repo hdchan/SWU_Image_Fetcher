@@ -1,0 +1,1 @@
+Modified [MTG_Image_Fetcher](https://github.com/TallPatrick/MTG_Image_Fetcher/tree/master) to accomdate SWU for streaming purposes.

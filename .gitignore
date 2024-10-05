@@ -1,0 +1,7 @@
+.vscode
+.conda
+/build
+/dist
+*.spec
+*.png
+!blank.png
