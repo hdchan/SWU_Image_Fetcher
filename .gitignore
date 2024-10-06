@@ -5,3 +5,5 @@
 *.spec
 *.png
 !blank.png
+__pycache__
+!Main.spec
