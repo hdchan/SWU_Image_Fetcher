@@ -1,0 +1,5 @@
+settings:
+  is_mock_data: false
+  is_performance_mode: false
+toggles:
+  developer_mode: true

@@ -1,16 +1,60 @@
-from PyQt5.QtWidgets import QApplication, QWidget
-
-# Only needed for access to command line arguments
 import sys
+from time import sleep
 
-# You need one (and only one) QApplication instance per application.
-# Pass in sys.argv to allow command line arguments for your app.
-# If you know you won't use command line arguments QApplication([]) works too.
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (
+    QApplication,
+    QLabel,
+    QMainWindow,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
+import concurrent.futures
+class Window(QMainWindow):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.clicksCount = 0
+        self.pool = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+        self.setupUi()
+
+    def setupUi(self):
+        self.setWindowTitle("Freezing GUI")
+        self.resize(300, 150)
+        self.centralWidget = QWidget()
+        self.setCentralWidget(self.centralWidget)
+        # Create and connect widgets
+        self.clicksLabel = QLabel("Counting: 0 clicks", self)
+        self.clicksLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        self.stepLabel = QLabel("Long-Running Step: 0")
+        self.stepLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        self.countBtn = QPushButton("Click me!", self)
+        self.countBtn.clicked.connect(lambda: self.pool.submit(self.countClicks))
+        self.longRunningBtn = QPushButton("Long-Running Task!", self)
+        self.longRunningBtn.clicked.connect(lambda: self.pool.submit(self.runLongTask))
+        # Set the layout
+        layout = QVBoxLayout()
+        layout.addWidget(self.clicksLabel)
+        layout.addWidget(self.countBtn)
+        layout.addStretch()
+        layout.addWidget(self.stepLabel)
+        layout.addWidget(self.longRunningBtn)
+        self.centralWidget.setLayout(layout)
+
+    def countClicks(self):
+        self.clicksCount += 1
+        self.clicksLabel.setText(f"Counting: {self.clicksCount} clicks")
+
+    def reportProgress(self, n):
+        self.stepLabel.setText(f"Long-Running Step: {n}")
+
+    def runLongTask(self):
+        """Long-running task in 5 steps."""
+        for i in range(5):
+            sleep(1)
+            self.reportProgress(i + 1)
+
 app = QApplication(sys.argv)
-
-# Create a Qt widget, which will be our window.
-window = QWidget()
-window.show()  # IMPORTANT!!!!! Windows are hidden by default.
-
-# Start the event loop.
-app.exec()
+win = Window()
+win.show()
+sys.exit(app.exec())

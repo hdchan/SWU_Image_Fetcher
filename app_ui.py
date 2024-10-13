@@ -1,4 +1,4 @@
-from ApplicationUI.Main import *
+from AppUI.Main import *
 
 if __name__ == '__main__':
     main()
