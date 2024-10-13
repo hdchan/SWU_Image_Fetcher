@@ -1,9 +1,7 @@
-.vscode
-.conda
 /build
 /dist
-*.spec
 *.png
-!blank.png
+!resources/*
 __pycache__
-!Main.spec
+.venv
+.empty
