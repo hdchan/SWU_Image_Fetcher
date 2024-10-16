@@ -1,13 +1,13 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QHBoxLayout, QSplitter, QWidget, QShortcut
-from PyQt5.QtGui import QKeySequence
-from AppUI.UIComponents import (CardSearchPreviewViewController,
-                                        ImageDeploymentListViewController)
-from functools import partial
-from AppCore.Observation import ObservationTower
-from AppCore.Config import Configuration
+from PyQt5.QtWidgets import QHBoxLayout, QSplitter, QWidget
+
 from AppCore import ApplicationCore
+from AppCore.Config import Configuration
+from AppCore.Observation import ObservationTower
+from AppUI.UIComponents import (CardSearchPreviewViewController,
+                                ImageDeploymentListViewController)
+
+
 class MainProgramViewController(QWidget):
     def __init__(self,
                  observation_tower: ObservationTower,
@@ -38,35 +38,12 @@ class MainProgramViewController(QWidget):
         layout.addWidget(deployment_view)
         layout.setSizes([150,400])
 
-        # Needs to block ability to publish if not able to
-        self.production_shortcut = QShortcut(QKeySequence(Qt.Modifier.CTRL + Qt.Key.Key_P), self)
-        self.production_shortcut.activated.connect(self.idl_did_tap_production_button)
+    def set_search_bar_focus(self):
+        self.card_search_view.set_search_focus()
 
-        self.search_shortcut = QShortcut(QKeySequence(Qt.Modifier.CTRL + Qt.Key.Key_L), self)
-        self.search_shortcut.activated.connect(self.card_search_view.set_search_focus)
-
-        self.flip_shortcut = QShortcut(QKeySequence(Qt.Modifier.CTRL + Qt.Key.Key_F), self)
-        self.flip_shortcut.activated.connect(self._flip_current_previewed_card_if_possible)
-
-        key_pad = [
-            Qt.Key.Key_1,
-            Qt.Key.Key_2,
-            Qt.Key.Key_3,
-            Qt.Key.Key_4,
-            Qt.Key.Key_5,
-            Qt.Key.Key_6,
-            Qt.Key.Key_7,
-            Qt.Key.Key_8,
-            Qt.Key.Key_9,
-            Qt.Key.Key_0,
-        ]
-        for i, k in enumerate(key_pad):
-            self.staging_shortcut = QShortcut(QKeySequence(Qt.Modifier.CTRL + k), self)
-            self.staging_shortcut.activated.connect(partial(self._stage_current_card_search_resource, i))
-
-    def _stage_current_card_search_resource(self, index: int):
-        if self.application_core.can_stage_current_card_search_resource_to_stage_index(index):
-            self.deployment_view.set_staging_image(self.application_core.current_card_search_resource.display_name, self.application_core.current_card_search_resource.image_preview_path, index)
+    def stage_current_card_search_resource(self, index: int):
+        if self.application_core.can_stage_current_card_search_resource_to_stage_index(index) and self.application_core.card_search_flow.current_card_search_resource is not None:
+            self.deployment_view.set_staging_image(self.application_core.card_search_flow.current_card_search_resource.display_name, self.application_core.card_search_flow.current_card_search_resource.image_preview_path, index)
             self.application_core.stage_resource(index)
 
     def load(self):
@@ -77,7 +54,7 @@ class MainProgramViewController(QWidget):
         self.deployment_view.clear_list()
         for index, r in enumerate(card_resource):
             file_name = r.file_name
-            staging_button_enabled = self.application_core.current_card_search_resource is not None
+            staging_button_enabled = self.application_core.card_search_flow.current_card_search_resource is not None
             self.deployment_view.create_list_item(f'File: {file_name}', file_name, r.image_preview_path, staging_button_enabled, index)
 
     def app_did_complete_search(self, app, result_list, error):
@@ -92,22 +69,22 @@ class MainProgramViewController(QWidget):
         self._update_production_button_state()
 
     # search table view
-    def tv_did_tap_search(self, table_view, query):
-        self.application_core.search(query)
+    def tv_did_tap_search(self, table_view, query: str):
+        self.application_core.card_search_flow.search(query)
         
 
     def tv_did_select(self, table_view, index):
-        self.application_core.select_card_resource_for_card_selection(index)
+        self.application_core.card_search_flow.select_card_resource_for_card_selection(index)
         self.deployment_view.set_all_staging_button_enabled(True)
 
     # card search
     def cs_did_tap_flip_button(self, cs):
-        self._flip_current_previewed_card_if_possible()
+        self.flip_current_previewed_card_if_possible()
 
 
     # image deployment view
     def idl_did_tap_staging_button(self, id_list, id_cell, index):
-        self._stage_current_card_search_resource(index)
+        self.stage_current_card_search_resource(index)
 
     def idl_did_tap_unstaging_button(self, id_list, id_cell, index):
         self.deployment_view.clear_staging_image(index)
@@ -119,6 +96,9 @@ class MainProgramViewController(QWidget):
         self.application_core.unstage_all_resources()
 
     def idl_did_tap_production_button(self):
+        self.publish_staged_resources()
+            
+    def publish_staged_resources(self):
         if self.application_core.can_publish_staged_resources():
             publish_success = self.application_core.publish_staged_resources()
             if  publish_success:
@@ -130,6 +110,6 @@ class MainProgramViewController(QWidget):
         production_button_enabled = self.application_core.can_publish_staged_resources()
         self.deployment_view.set_production_button_enabled(production_button_enabled)
 
-    def _flip_current_previewed_card_if_possible(self):
-        if self.application_core.current_previewed_trading_card_is_flippable():
-            self.application_core.flip_current_previewed_card()
+    def flip_current_previewed_card_if_possible(self):
+        if self.application_core.card_search_flow.current_previewed_trading_card_is_flippable():
+            self.application_core.card_search_flow.flip_current_previewed_card()

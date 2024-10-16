@@ -1,13 +1,15 @@
 from ..Config.Configuration import *
-from .ImageFetcher import MockImageFetcher, RemoteImageFetcher
+
 from .ImageFetcherProtocol import *
 
 
 class ImageFetcherProvider:
-    def __init__(self, configuration: Configuration):
+    def __init__(self, configuration: Configuration, 
+                 real_client: ImageFetcherProtocol, 
+                 mock_client: ImageFetcherProtocol):
         self.configuration = configuration
-        self.real_client = RemoteImageFetcher()
-        self.mock_client = MockImageFetcher()
+        self.real_client = real_client
+        self.mock_client = mock_client
 
     def provideImageFetcher(self) -> ImageFetcherProtocol:
         if self.configuration.is_mock_data:

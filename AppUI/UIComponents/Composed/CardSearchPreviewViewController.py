@@ -1,12 +1,15 @@
-from PyQt5 import *
-from PyQt5.QtWidgets import (QFrame, QPushButton, QSizePolicy, QVBoxLayout,
-                             QWidget)
 
+from typing import List
+
+from PyQt5.QtWidgets import QPushButton, QSizePolicy, QVBoxLayout, QWidget
+
+from AppCore.Config import Configuration
+from AppCore.Observation import ObservationTower
 from ..Base import ImagePreviewViewController, SearchTableView
 
 
 class CardSearchPreviewViewController(QWidget):
-    def __init__(self, observation_tower, configuration):
+    def __init__(self, observation_tower: ObservationTower, configuration: Configuration):
         super().__init__()
 
         layout = QVBoxLayout()
@@ -19,7 +22,7 @@ class CardSearchPreviewViewController(QWidget):
         preview_view.setMinimumHeight(300)
         
         self.staging_view = preview_view
-        preview_view.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        preview_view.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         # lbl2.setMinimumHeight(300);
         layout.addWidget(preview_view)
 
@@ -55,14 +58,14 @@ class CardSearchPreviewViewController(QWidget):
     def set_search_focus(self):
         self.search_table_view.set_search_focus()
 
-    def set_item_active(self, index):
+    def set_item_active(self, index: int):
         self.search_table_view.set_item_active(index)
 
-    def set_image(self, img_alt, img_path, is_flippable):
+    def set_image(self, img_alt: str, img_path: str, is_flippable: bool):
         self.staging_view.set_image(img_alt, img_path)
         self.flip_button.setEnabled(is_flippable)
 
-    def update_list(self, result_list):
+    def update_list(self, result_list: List[str]):
         self.search_table_view.update_list(result_list)
 
     def tapped_flip_button(self):

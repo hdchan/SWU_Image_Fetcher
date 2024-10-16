@@ -1,14 +1,16 @@
 from AppCore.Config.Configuration import *
 
 from .APIClientProtocol import APIClientProtocol
-from .SWUDB.SWUDBClient import MockSWUDBClient, SWUDBClient
 
 
 class APIClientProvider:
-    def __init__(self, configuration: Configuration):
+    def __init__(self, 
+                 configuration: Configuration, 
+                 real_client: APIClientProtocol, 
+                 mock_client: APIClientProtocol):
         self.configuration = configuration
-        self.mock_client = MockSWUDBClient()
-        self.real_client = SWUDBClient()
+        self.real_client = real_client
+        self.mock_client = mock_client
 
     def provideClient(self) -> APIClientProtocol:
         if self.configuration.is_mock_data:

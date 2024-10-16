@@ -1,8 +1,9 @@
-from pyqtspinner import *
+from pyqtspinner import WaitingSpinner
 from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import QWidget
 
 class LoadingSpinner(WaitingSpinner):
-    def __init__(self, parent):
+    def __init__(self, parent: QWidget):
         super().__init__(
             parent,
             roundness=100.0,

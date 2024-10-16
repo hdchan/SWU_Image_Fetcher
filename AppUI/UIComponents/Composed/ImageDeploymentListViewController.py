@@ -1,12 +1,16 @@
-from PyQt5 import *
+
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QPushButton, QScrollArea, QVBoxLayout, QWidget
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+
+from AppCore import Configuration, ObservationTower
+
 from . import ImageDeploymentViewController
 
 
 class ImageDeploymentListViewController(QWidget):
-    def __init__(self, observation_tower, configuration):
+    def __init__(self, 
+                 observation_tower: ObservationTower, 
+                 configuration: Configuration):
         super().__init__()
 
         self.observation_tower = observation_tower
@@ -39,12 +43,12 @@ class ImageDeploymentListViewController(QWidget):
         self.setLayout(layout_2)
         
 
-        self.layout = layout
+        self._layout = layout
         self.list_items = []
         self.scroll = scroll
         self.delegate = None
 
-    def create_list_item(self, file_name, img_alt, img, staging_button_enabled, index):
+    def create_list_item(self, file_name: str, img_alt: str, img: str, staging_button_enabled: bool, index: int):
         item = ImageDeploymentViewController(self.observation_tower, 
                                              self.configuration)
         item.delegate = self
@@ -56,12 +60,12 @@ class ImageDeploymentListViewController(QWidget):
         pal.setColor(item.backgroundRole(), Qt.GlobalColor.lightGray)
         item.setAutoFillBackground(True)
         item.setPalette(pal)
-        self.layout.addWidget(item)
+        self._layout.addWidget(item)
 
         self.list_items.append(item)
 
     def clear_list(self):
-        for i in reversed(range(self.layout.count())):
+        for i in reversed(range(self._layout.count())):
             self.layout.takeAt(i).widget().deleteLater()
         self.list_items = []
 
@@ -94,11 +98,11 @@ class ImageDeploymentListViewController(QWidget):
     def tapped_unstage_all_button(self):
         self.delegate.idl_did_tap_unstage_all_button()
 
-    def set_all_staging_button_enabled(self, enabled):
+    def set_all_staging_button_enabled(self, enabled: bool):
         for idx, i in enumerate(self.list_items):
             i.set_staging_button_enabled(enabled)
 
-    def set_production_button_enabled(self, enabled):
+    def set_production_button_enabled(self, enabled: bool):
         # https://stackoverflow.com/questions/21685414/qt5-setting-background-color-to-qpushbutton-and-qcheckbox
         # pal = self.production_button.palette()
         # pal.setColor(self.production_button.backgroundRole(), Qt.green)

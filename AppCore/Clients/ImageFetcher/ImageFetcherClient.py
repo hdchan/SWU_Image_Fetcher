@@ -1,14 +1,15 @@
 import random
 from urllib.parse import urlparse
-
+import time
 import requests
 from PIL import Image, ImageDraw, ImageFont
 
-from ..ImageFetcherProtocol import *
+from ...Image import ImageFetcherProtocol
 
 
 class MockImageFetcher(ImageFetcherProtocol):
     def fetch(self, image_url: str) ->Image.Image:
+        time.sleep(self.configuration.network_delay_duration)
         parsed_url = urlparse(image_url)
         file_name = parsed_url.path.split('/')[-1]
         color_palette = [
@@ -27,12 +28,18 @@ class MockImageFetcher(ImageFetcherProtocol):
  
         # Add Text to an image
         myFont = ImageFont.truetype('arial.ttf', 20)
-        I1.text((0, 100), file_name, font=myFont, fill=(0, 0, 0))
+        I1.text((0, 100), file_name, font=myFont, fill=(0, 0, 0)) # type: ignore
         return img
 
 class RemoteImageFetcher(ImageFetcherProtocol):
     def fetch(self, image_url: str) -> Image.Image:
         # TODO: retry if failed, and delete from cache
-        img_data = requests.get(image_url, stream=True).raw
-        img = Image.open(img_data)
-        return img
+        time.sleep(self.configuration.network_delay_duration)
+        try:
+            print(f'fetching real image: {image_url}')
+            img_data = requests.get(image_url, stream=True).raw
+            img = Image.open(img_data) # type: ignore
+            return img
+        except Exception as error:
+            raise Exception(error)
+        

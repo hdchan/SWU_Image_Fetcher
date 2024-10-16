@@ -3,13 +3,17 @@ from typing import List, Tuple
 from AppCore.Data import APIClientProtocol, APIClientProvider
 from AppCore.Models.TradingCard import *
 
-# class DataSourceDelegate:
-#     def ds_completed_search_with_result(dataSource: DataSource, )
+class CardDataSourceDelegate:
+    def ds_completed_search_with_result(self, ds: object, result_list: List[TradingCard], error: Optional[Exception]):
+        raise Exception()
+    
+    
 
-class DataSource:
-    def __init__(self, api_client_provider: APIClientProvider):
+class CardDataSource:
+    def __init__(self, 
+                 api_client_provider: APIClientProvider):
         self.api_client_provider: APIClientProvider = api_client_provider
-        self.delegate = None
+        self.delegate: CardDataSourceDelegate
         self.current_previewed_trading_card = None
         self._current_trading_cards_list: List[TradingCard] = []
     

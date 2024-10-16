@@ -1,31 +1,38 @@
-from PyQt5 import *
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel
-from PyQt5 import QtCore
-from AppCore.Observation.Events import ConfigurationUpdatedEvent, LocalResourceReadyEvent
+from PyQt5.QtCore import Qt
+from typing import Optional
 from PyQt5.QtGui import QPixmap
-from .LoadingSpinner import LoadingSpinner
+from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget
 
-class ImagePreviewViewController(QWidget):
-    def __init__(self, observation_tower, configuration):
+from AppCore.Config import Configuration
+from AppCore.Observation import ObservationTower, TransmissionReceiver
+from AppCore.Observation.Events import (ConfigurationUpdatedEvent,
+                                        LocalResourceReadyEvent)
+
+from .LoadingSpinner import LoadingSpinner
+from AppCore.Observation.Events import TransmissionProtocol
+
+
+class ImagePreviewViewController(QWidget, TransmissionReceiver):
+    def __init__(self, observation_tower: ObservationTower, configuration: Configuration):
         super().__init__()
         layout = QVBoxLayout(self)
         
         label = QLabel(self)
-        label.setAlignment(QtCore.Qt.AlignCenter)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(label)
         self.setLayout(layout)
 
         self._image_view = label
         self.loading_spinner = LoadingSpinner(self)
 
-        self._img_path = None
-        self._img_alt = None
+        self._img_path: Optional[str] = None
+        self._img_alt: Optional[str] = None
         self._configuration = configuration
 
         observation_tower.subscribe(self, ConfigurationUpdatedEvent)
         observation_tower.subscribe(self, LocalResourceReadyEvent)
 
-    def set_image(self, img_alt, img_path):
+    def set_image(self, img_alt: str, img_path: str):
         self.loading_spinner.start()
         self._img_path = img_path
         self._img_alt = img_alt
@@ -47,7 +54,6 @@ class ImagePreviewViewController(QWidget):
                 image = QPixmap()
                 success = image.load(self._img_path)
                 if not success:
-                    # self._image_view.setText(self._img_alt)
                     self._image_view.clear()
                     self.loading_spinner.start()
                     return
@@ -57,12 +63,10 @@ class ImagePreviewViewController(QWidget):
             self.loading_spinner.stop()
             self._image_view.setText(self._img_alt)
 
-    def handle_observation_tower_event(self, event):
+    def handle_observation_tower_event(self, event: TransmissionProtocol):
         if type(event) == ConfigurationUpdatedEvent:
             self._load_for_configuration()
         elif type(event) == LocalResourceReadyEvent:
             if self._img_path == event.local_resource.image_preview_path:
                 self._load_image_view()
-                # TODO: wondering if we can do this differently?
-                # maybe register more specific identifiers within the event bus
                 print(f"Reloading resource: {self._img_path}")
