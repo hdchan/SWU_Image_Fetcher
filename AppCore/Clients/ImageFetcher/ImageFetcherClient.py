@@ -1,7 +1,6 @@
 import random
-from urllib.parse import urlparse
+from urllib import request, parse
 import time
-import requests
 from PIL import Image, ImageDraw, ImageFont
 
 from ...Image import ImageFetcherProtocol
@@ -10,7 +9,7 @@ from ...Image import ImageFetcherProtocol
 class MockImageFetcher(ImageFetcherProtocol):
     def fetch(self, image_url: str) ->Image.Image:
         time.sleep(self.configuration.network_delay_duration)
-        parsed_url = urlparse(image_url)
+        parsed_url = parse.urlparse(image_url)
         file_name = parsed_url.path.split('/')[-1]
         color_palette = [
             (255, 179, 186),
@@ -36,8 +35,8 @@ class RemoteImageFetcher(ImageFetcherProtocol):
         # TODO: retry if failed, and delete from cache
         time.sleep(self.configuration.network_delay_duration)
         try:
+            img_data = request.urlopen(image_url)
             print(f'fetching real image: {image_url}')
-            img_data = requests.get(image_url, stream=True).raw
             img = Image.open(img_data) # type: ignore
             return img
         except Exception as error:

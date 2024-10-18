@@ -70,4 +70,6 @@ We can source image files on our stream from the `./production` folder, and they
 - [ ] Macro for last played card
 - [ ] Image recognition
 - [ ] Drag and drop staging images
-- [ ] Advanced filterd search
+- [ ] Advanced filtered search
+- [ ] Recently published cards
+- [ ] Recent searches

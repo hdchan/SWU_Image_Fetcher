@@ -66,7 +66,7 @@ class ImageDeploymentListViewController(QWidget):
 
     def clear_list(self):
         for i in reversed(range(self._layout.count())):
-            self.layout.takeAt(i).widget().deleteLater()
+            self._layout.takeAt(i).widget().deleteLater()
         self.list_items = []
 
     def id_did_tap_staging_button(self, id_cell):

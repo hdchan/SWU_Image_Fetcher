@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (QLineEdit, QListWidget, QPushButton, QVBoxLayout,
                              QWidget)
 
 from AppCore.Observation import ObservationTower, TransmissionReceiver
-
+from .LoadingSpinner import LoadingSpinner
 
 class SearchTableView(QWidget, TransmissionReceiver):
     def __init__(self, observation_tower: ObservationTower):
@@ -28,6 +28,8 @@ class SearchTableView(QWidget, TransmissionReceiver):
         layout.addWidget(search_button)
         layout.addWidget(result_list)
         self.setLayout(layout)
+        
+        self._loading_spinner = LoadingSpinner(self)
 
         self.delegate = None
 
@@ -45,6 +47,7 @@ class SearchTableView(QWidget, TransmissionReceiver):
     def search(self):
         # important that this happens before the delegate methods are called
         self._set_search_components_enabled(False)
+        self._loading_spinner.start()
         # prevent query errors
         stripped_text = self.searchbar.text().strip()
         self.searchbar.setText(stripped_text)
@@ -57,6 +60,7 @@ class SearchTableView(QWidget, TransmissionReceiver):
             self.result_list.addItem(i)
         # important that this is the last thing that happens
         self._set_search_components_enabled(True)
+        self._loading_spinner.stop()
 
     def _set_search_components_enabled(self, is_on: bool):
         self.searchbar.setEnabled(is_on)

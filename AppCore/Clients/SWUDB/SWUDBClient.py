@@ -1,29 +1,17 @@
-import json
 import urllib.parse
 from typing import Any, Dict, List
+from urllib.request import Request
 
 from ...Data.APIClientProtocol import (APIClientProtocol,
                                        APIClientSearchCallback)
 from ...Models.TradingCard import TradingCard
 from ...Network import NetworkRequestResponse
-from urllib.request import Request
+from .SWUTradingCard import SWUTradingCard
 
 # https://stackoverflow.com/a/33453124
 # suggests using move to thread
 
-class SWUTradingCard(TradingCard):
-    @classmethod
-    def from_swudb_response(cls, json: Dict[str, Any]):
-        obj = cls.__new__(cls)
-        super(SWUTradingCard, obj).__init__(
-            name=json['Name'],
-            set=json['Set'],
-            type=json['Type'],
-            front_art=json['FrontArt'],
-            number=json['Number'],
-            back_art=json.get('BackArt', None)
-        )
-        return obj
+
 
 class SWUDBClient(APIClientProtocol):
 
@@ -47,15 +35,4 @@ class SWUDBClient(APIClientProtocol):
             
         self.netorker.load(SearchRequestResponse(query), callback)
         
-        
-class MockSWUDBClient(APIClientProtocol):
-    
-    # TODO: need to hook up developer delay here
-    def search(self, query: str, callback: APIClientSearchCallback):
-        with open('./AppCore/Data/SWUDB/sor.json', 'r') as file:
-            json_response = json.load(file)
-        result_list: List[TradingCard] = []
-        for i in json_response['data']:
-                swu_card = SWUTradingCard.from_swudb_response(i)
-                result_list.append(swu_card)
-        callback((result_list, None))
+      
